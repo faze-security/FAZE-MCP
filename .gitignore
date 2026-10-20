@@ -1,0 +1,27 @@
+# Local MCP client config — contains secrets (e.g. API_KEY).
+# Note: only this file is ignored, NOT the whole .cursor/ directory,
+# so shared project config under .cursor/ can still be committed.
+.cursor/mcp.json
+
+# IDE
+.idea/
+
+# Python bytecode / caches
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Virtual environments
+.venv/
+
+# Environment files (keep the example template)
+.env
+.env.*
+!.env.example
+
+# uv artifacts — runtime dependencies are provided via `uv run --with ...`
+# (see README), and pyproject.toml here declares no dependencies, so these
+# are not needed for a reproducible install. Remove if you later manage
+# dependencies through pyproject.toml.
+uv.lock
+pyproject.toml
