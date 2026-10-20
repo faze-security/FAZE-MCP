@@ -1,96 +1,191 @@
-The FazeMCP (Model Context Protocol) is essential for enabling intelligent, 
-autonomous control of the Faze platform through natural language. It allows users to 
-integrate powerful AI models like ChatGPT, Claude, or Cursor directly with Faze, 
-enabling them to launch scans, interpret results, and execute complex attack sequences 
-using simple prompts. By serving as a communication bridge between AI agents and the 
-Faze API, the MCP transforms traditional security testing into an automated, agentic process. 
-This not only reduces manual effort and accelerates testing but also empowers users—technical 
-and non-technical alike—to leverage cutting-edge AI to interact with and operate the platform 
-as if they were speaking to a skilled human tester
+The FazeMCP (Model Context Protocol) is essential for enabling intelligent,
+autonomous control of the Faze platform through natural language. It allows users to
+integrate powerful AI models like ChatGPT, Claude, or Cursor directly with Faze,
+enabling them to launch scans, interpret results, and execute complex attack sequences
+using simple prompts. By serving as a communication bridge between AI agents and the
+Faze API, the MCP transforms traditional security testing into an automated, agentic process.
+This not only reduces manual effort and accelerates testing but also empowers users—technical
+and non-technical alike—to leverage cutting-edge AI to interact with and operate the platform
+as if they were speaking to a skilled human tester.
 
-MCP for the FAZE Agentic Red Team platform and is focused on automated penetration testing and platform management, it should stay centered on those capabilities. A better one-paragraph version is: FazeMCP is the Model Context Protocol server for the FAZE Agentic Red Team platform, designed to let AI agents and external systems securely manage and operate FAZE through standardized tools and machine-readable responses, including retrieving dashboard and system data, monitoring discovery and scan coverage, launching and duplicating automated penetration tests, configuring scan settings such as authentication profiles, API schemas, headers, cookies, proxies, scheduling, and rate limits, and enabling seamless automation of both security testing and day-to-day platform management across web applications, APIs, and external attack surfaces.
+---
 
--------------------------------------------------------
-STEP 1: UV Installation -
-    For windows, Open CMD as administrator and run
+## Prerequisites
 
-    powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-    
-For Linux & Mac -
+### 1. Install `uv`
 
-    curl -LsSf https://astral.sh/uv/install.sh | sh
+**Windows** — open PowerShell and run:
 
-OR
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
 
-    wget -qO- https://astral.sh/uv/install.sh | sh
+**Linux & macOS**:
 
--------------------------------------------------------
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
 
-STEP 2: Pip Install mcp -
+> After installation, note the full path to the `uv` executable — you will need it for the config below.
+> - Windows: usually `C:\Users\<YourUser>\.local\bin\uv.exe`
+> - Linux/macOS: usually `uv` is on your `PATH` (run `which uv` to confirm)
 
-    pip install mcp[cli]
+### 2. Install the MCP CLI
 
--------------------------------------------------------
-STEP 3: Insert to Claude -
-1. Open PowerShell (on Windows) or your Terminal (on macOS/Linux) and change directory to where your FazeMCP.py file is located.
-2. Enter and execute the command below:
+> **Important:** FazeMCP targets the MCP **v1** API (`FastMCP`). Install the matching major version — do **not** install `mcp` 2.x, it will fail to load.
 
+```bash
+pip install "mcp[cli]<2"
+```
 
-    uv run mcp install FazeMCP.py
+---
 
--------------------------------------------------------
+## Setup — Cursor
 
-STEP 4: Json Configuration -
-1. Open Claude App
-2. Go to file > Settings > Developers > Edit Config
-3. Edit "claude_desktop_config" file
+Cursor reads MCP servers from an `mcp.json` file:
 
-Windows:
+- **Per-project:** `<your-project>/.cursor/mcp.json`
+- **Global (all projects):** `~/.cursor/mcp.json` (Windows: `C:\Users\<YourUser>\.cursor\mcp.json`)
 
+Create/edit that file:
+
+**Windows**
+
+```json
+{
+  "mcpServers": {
     "FazeMCP": {
-          "command": "C:\\Users\\UserName\\.local\\bin\\uv.EXE",
-          "args": [
-            "run",
-            "--with",
-            "mcp[cli]",
-            "mcp",
-            "run",
-            "to/your/path/FazeMCP.py"
-          ],
-          "env": {
-            "API_KEY": "xxxxxxxx-xxxx-xxxx-xxxxxxxx",
-            "API_GATEWAY": "https://api.faze.security"
-          }
-        }
+      "command": "C:\\Users\\<YourUser>\\.local\\bin\\uv.exe",
+      "args": [
+        "run",
+        "--with",
+        "mcp[cli]<2",
+        "--with",
+        "requests",
+        "mcp",
+        "run",
+        "C:\\Users\\<YourUser>\\path\\to\\FazeMCP.py"
+      ],
+      "env": {
+        "API_KEY": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+        "API_GATEWAY": "https://api.faze.security"
       }
+    }
+  }
+}
+```
 
-Linux:
+**Linux / macOS**
 
+```json
+{
+  "mcpServers": {
     "FazeMCP": {
-          "command": "uv",
-          "args": [
-            "run",
-            "--with",
-            "mcp[cli]",
-            "mcp",
-            "run",
-            "to/your/path/FazeMCP.py"
-          ],
-          "env": {
-            "API_KEY": "xxxxxxxx-xxxx-xxxx-xxxxxxxx",
-            "API_GATEWAY": "https://api.faze.security"
-          }
-        }
+      "command": "uv",
+      "args": [
+        "run",
+        "--with",
+        "mcp[cli]<2",
+        "--with",
+        "requests",
+        "mcp",
+        "run",
+        "/your/path/FazeMCP.py"
+      ],
+      "env": {
+        "API_KEY": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+        "API_GATEWAY": "https://api.faze.security"
       }
+    }
+  }
+}
+```
 
--------------------------------------------------------
+Then open **Cursor Settings → MCP & Integrations**, confirm **FazeMCP** is enabled with a green status, and press **Refresh** if you just edited the file.
 
-STEP 5: Restart Claude:
+---
 
-1. Open Task Manager and locate any running “Claude” processes.
-2. Select the process and click End Task.
-3. Relaunch the Claude application.
+## Setup — Claude Desktop
 
--------------------------------------------------------
+1. Open the Claude Desktop app.
+2. Go to **File → Settings → Developer → Edit Config**.
+3. Edit `claude_desktop_config.json` and add the server block below.
 
-STEP 6: Enjoy!
+**Windows**
+
+```json
+{
+  "mcpServers": {
+    "FazeMCP": {
+      "command": "C:\\Users\\<YourUser>\\.local\\bin\\uv.exe",
+      "args": [
+        "run",
+        "--with",
+        "mcp[cli]<2",
+        "--with",
+        "requests",
+        "mcp",
+        "run",
+        "C:\\Users\\<YourUser>\\path\\to\\FazeMCP.py"
+      ],
+      "env": {
+        "API_KEY": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+        "API_GATEWAY": "https://api.faze.security"
+      }
+    }
+  }
+}
+```
+
+**Linux / macOS**
+
+```json
+{
+  "mcpServers": {
+    "FazeMCP": {
+      "command": "uv",
+      "args": [
+        "run",
+        "--with",
+        "mcp[cli]<2",
+        "--with",
+        "requests",
+        "mcp",
+        "run",
+        "/your/path/FazeMCP.py"
+      ],
+      "env": {
+        "API_KEY": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+        "API_GATEWAY": "https://api.faze.security"
+      }
+    }
+  }
+}
+```
+
+### Restart Claude
+
+1. Open Task Manager (Windows) / Activity Monitor (macOS) and end any running **Claude** processes.
+2. Relaunch the Claude application.
+
+---
+
+## Usage
+
+Once the server shows as connected, just ask in natural language and the agent will call the matching
+FAZE tools, for example:
+
+- "List my Agentic Red Team projects"
+- "Show the newest vulnerabilities for project 1028"
+- "What attack options are available?"
+- "Add https://example.com as an asset and start a recon scan"
+
+---
+
+## General Guidance
+
+- Always use absolute paths for both the `uv` executable and `FazeMCP.py` in the config.
+- Keep your `API_KEY` private — treat it as a secret and never commit it to source control.
+- The MCP server loads its configuration and code when it starts, so refresh the server in Cursor (or fully restart Claude) after changing the config.
+- After enabling the server, confirm it shows a connected status before sending prompts.
+- Run only one FazeMCP server instance per client to avoid duplicate tool registrations.
